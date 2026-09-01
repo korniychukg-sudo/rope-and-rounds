@@ -52,7 +52,7 @@ struct TowerTodayView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("TOWER ROUNDS").font(Cut.title(12)).tracking(3.2).foregroundColor(Belfry.rust)
+            Text("ROPE & ROUNDS").font(Cut.title(12)).tracking(3.2).foregroundColor(Belfry.rust)
             Text(longDate).font(Cut.title(25)).foregroundColor(Belfry.ink)
             Text(towerLight(hour: hour).name.lowercased() + " over the belfry")
                 .font(Cut.italic(14)).foregroundColor(Belfry.inkPale)

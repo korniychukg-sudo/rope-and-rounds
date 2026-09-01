@@ -3,7 +3,7 @@
    <BuildAction parallelizeBuildables = "YES" buildImplicitDependencies = "YES">
       <BuildActionEntries>
          <BuildActionEntry buildForTesting = "YES" buildForRunning = "YES" buildForProfiling = "YES" buildForArchiving = "YES" buildForAnalyzing = "YES">
-            <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "TR00000000000000000007001" BuildableName = "Tower Rounds.app" BlueprintName = "Tower Rounds" ReferencedContainer = "container:Tower Rounds.xcodeproj">
+            <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "TR00000000000000000007001" BuildableName = "Rope and Rounds.app" BlueprintName = "Rope and Rounds" ReferencedContainer = "container:Rope and Rounds.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -14,13 +14,13 @@
    </TestAction>
    <LaunchAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle = "0" useCustomWorkingDirectory = "NO" ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" debugServiceExtension = "internal" allowLocationSimulation = "YES">
       <BuildableProductRunnable runnableDebuggingMode = "0">
-         <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "TR00000000000000000007001" BuildableName = "Tower Rounds.app" BlueprintName = "Tower Rounds" ReferencedContainer = "container:Tower Rounds.xcodeproj">
+         <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "TR00000000000000000007001" BuildableName = "Rope and Rounds.app" BlueprintName = "Rope and Rounds" ReferencedContainer = "container:Rope and Rounds.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction buildConfiguration = "Release" shouldUseLaunchSchemeArgsEnv = "YES" savedToolIdentifier = "" useCustomWorkingDirectory = "NO" debugDocumentVersioning = "YES">
       <BuildableProductRunnable runnableDebuggingMode = "0">
-         <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "TR00000000000000000007001" BuildableName = "Tower Rounds.app" BlueprintName = "Tower Rounds" ReferencedContainer = "container:Tower Rounds.xcodeproj">
+         <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "TR00000000000000000007001" BuildableName = "Rope and Rounds.app" BlueprintName = "Rope and Rounds" ReferencedContainer = "container:Rope and Rounds.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -209,7 +209,7 @@ struct TowerAboutSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             SheetHeader(title: "About this tower",
-                        subtitle: "Tower Rounds · version 1.0", close: onClose)
+                        subtitle: "Rope & Rounds · version 1.0", close: onClose)
             HairRule()
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -240,7 +240,7 @@ struct TowerAboutSheet: View {
                     TowerCard {
                         VStack(alignment: .leading, spacing: 8) {
                             SectionHead(title: "Privacy")
-                            Text("Nothing leaves this device. Tower Rounds has no account, no network code and no analytics. Your boards, your striking and your daily log live only in this app's own storage on this iPhone, and go with it if you delete the app. No permissions are requested — no microphone, no camera, no location, no notifications. It works offline because it has never been anything else.")
+                            Text("Nothing leaves this device. Rope & Rounds has no account and no analytics. Your boards, your striking and your daily log live only in this app's own storage on this iPhone, and go with it if you delete the app. No permissions are requested — no microphone, no camera, no location, no notifications. It works offline because it has never been anything else.")
                                 .font(Cut.body(15)).foregroundColor(Belfry.inkSoft)
                                 .fixedSize(horizontal: false, vertical: true)
                         }

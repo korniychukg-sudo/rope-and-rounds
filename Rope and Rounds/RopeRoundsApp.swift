@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct TowerRoundsApp: App {
+struct RopeRoundsApp: App {
     @StateObject private var store = TowerStore()
     @Environment(\.scenePhase) private var scenePhase
 
