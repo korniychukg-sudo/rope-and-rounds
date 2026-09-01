@@ -15,6 +15,8 @@
 		TR00000000000000000003006 /* TowerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001006 /* TowerComponents.swift */; };
 		TR00000000000000000003007 /* TowerIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001007 /* TowerIcons.swift */; };
 		TR00000000000000000003008 /* TowerRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001008 /* TowerRootView.swift */; };
+		TR00000000000000000003901 /* RopeLoadingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001901 /* RopeLoadingScreen.swift */; };
+		TR00000000000000000003900 /* RopeWebPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001900 /* RopeWebPanel.swift */; };
 		TR00000000000000000003009 /* RopeRoundsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001009 /* RopeRoundsApp.swift */; };
 		TR00000000000000000003010 /* TowerScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001010 /* TowerScene.swift */; };
 		TR00000000000000000003011 /* TowerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR00000000000000000001011 /* TowerStore.swift */; };
@@ -34,6 +36,8 @@
 		TR00000000000000000001006 /* TowerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerComponents.swift; sourceTree = "<group>"; };
 		TR00000000000000000001007 /* TowerIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerIcons.swift; sourceTree = "<group>"; };
 		TR00000000000000000001008 /* TowerRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerRootView.swift; sourceTree = "<group>"; };
+		TR00000000000000000001901 /* RopeLoadingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RopeLoadingScreen.swift; sourceTree = "<group>"; };
+		TR00000000000000000001900 /* RopeWebPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RopeWebPanel.swift; sourceTree = "<group>"; };
 		TR00000000000000000001009 /* RopeRoundsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RopeRoundsApp.swift; sourceTree = "<group>"; };
 		TR00000000000000000001010 /* TowerScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerScene.swift; sourceTree = "<group>"; };
 		TR00000000000000000001011 /* TowerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerStore.swift; sourceTree = "<group>"; };
@@ -76,6 +80,8 @@
 				TR00000000000000000001006 /* TowerComponents.swift */,
 				TR00000000000000000001007 /* TowerIcons.swift */,
 				TR00000000000000000001008 /* TowerRootView.swift */,
+				TR00000000000000000001901 /* RopeLoadingScreen.swift */,
+				TR00000000000000000001900 /* RopeWebPanel.swift */,
 				TR00000000000000000001009 /* RopeRoundsApp.swift */,
 				TR00000000000000000001010 /* TowerScene.swift */,
 				TR00000000000000000001011 /* TowerStore.swift */,
@@ -175,6 +181,8 @@
 				TR00000000000000000003006 /* TowerComponents.swift in Sources */,
 				TR00000000000000000003007 /* TowerIcons.swift in Sources */,
 				TR00000000000000000003008 /* TowerRootView.swift in Sources */,
+				TR00000000000000000003901 /* RopeLoadingScreen.swift in Sources */,
+				TR00000000000000000003900 /* RopeWebPanel.swift in Sources */,
 				TR00000000000000000003009 /* RopeRoundsApp.swift in Sources */,
 				TR00000000000000000003010 /* TowerScene.swift in Sources */,
 				TR00000000000000000003011 /* TowerStore.swift in Sources */,
