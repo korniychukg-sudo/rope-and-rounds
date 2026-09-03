@@ -237,14 +237,6 @@ struct TowerAboutSheet: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
-                    TowerCard {
-                        VStack(alignment: .leading, spacing: 8) {
-                            SectionHead(title: "Privacy")
-                            Text("Your ringing stays on this device. Rope & Rounds has no account and no analytics. Your boards, your striking and your daily log live only in this app's own storage on this device, and go with it if you delete the app. No permissions are requested — no microphone, no camera, no location, no contacts, no notifications. Nothing about you is collected, so there is nothing to share or sell. The belfry itself works with no connection at all.")
-                                .font(Cut.body(15)).foregroundColor(Belfry.inkSoft)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
                 }
                 .padding(.horizontal, Frame.gutter)
                 .padding(.vertical, 18)
