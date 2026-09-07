@@ -45,22 +45,24 @@ final class RopeGateTracker: NSObject, URLSessionTaskDelegate {
 @MainActor
 final class RopeLaunchGate: ObservableObject {
     @Published private(set) var ready: Bool? = nil
+
     let sourceLink: String
     private let checkDomain: String
     private let ownHost: String
 
-    private let requestTimeout: TimeInterval = 10
-    private let stallThreshold: TimeInterval = 3
-    private let swapWindow: TimeInterval = 12
-    private let maxRetries = 1
+    private let foregroundStall: TimeInterval = 3
+    private let backgroundStall: TimeInterval = 8
+    private let attemptCeiling: TimeInterval = 30
+    private let swapWindow: TimeInterval = 25
+    private let backgroundRetryDelay: TimeInterval = 3
 
-    private var tracker: RopeGateTracker?
+    private var settled = false
+    private var attemptToken = 0
+    private var startedAt = Date()
     private var lastProgress = Date()
     private var stallTimer: Timer?
-    private var swapDeadline: Date?
-    private var settled = false
-    private var started = false
-    private var retries = 0
+    private var task: URLSessionTask?
+    private var session: URLSession?
 
     init(sourceLink: String, checkDomain: String) {
         self.sourceLink = sourceLink
@@ -69,95 +71,108 @@ final class RopeLaunchGate: ObservableObject {
     }
 
     func start() {
-        guard !started else { return }
-        started = true
-        lastProgress = Date()
-        fire()
-        stallTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.tick() }
-        }
+        guard attemptToken == 0 else { return }
+        startedAt = Date()
+        attempt(1)
     }
 
-    private func fire() {
-        guard let url = URL(string: sourceLink) else { finish(false); return }
+    private func attempt(_ n: Int) {
+        guard !settled else { return }
+        guard let url = URL(string: sourceLink) else { settle(false); return }
+
+        attemptToken += 1
+        let token = attemptToken
+
         var request = URLRequest(url: url)
         request.httpMethod = "HEAD"
-        request.timeoutInterval = requestTimeout
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.timeoutInterval = 10
 
-        let config = URLSessionConfiguration.ephemeral
-        config.waitsForConnectivity = true
-        config.timeoutIntervalForResource = 25
+        let config = URLSessionConfiguration.default
+        config.waitsForConnectivity = (ready != nil)
+        config.timeoutIntervalForResource = attemptCeiling
+        config.urlCache = nil
+        config.httpCookieStorage = nil
+        config.httpShouldSetCookies = false
 
-        let watcher = RopeGateTracker(checkDomain: checkDomain, ownHost: ownHost)
-        watcher.onProgress = { [weak self] in
+        let tracker = RopeGateTracker(checkDomain: checkDomain, ownHost: ownHost)
+        tracker.onProgress = { [weak self] in
             Task { @MainActor in self?.lastProgress = Date() }
         }
-        watcher.onEarlyVerdict = { [weak self] verdict in
-            Task { @MainActor in self?.finish(verdict) }
+        tracker.onEarlyVerdict = { [weak self] verdict in
+            Task { @MainActor in self?.settle(verdict) }
         }
-        self.tracker = watcher
 
-        let session = URLSession(configuration: config, delegate: watcher, delegateQueue: nil)
-        session.dataTask(with: request) { [weak self] _, response, error in
-            Task { @MainActor in self?.complete(response, error) }
-        }.resume()
-    }
+        let session = URLSession(configuration: config, delegate: tracker, delegateQueue: nil)
+        lastProgress = Date()
+        armStallWatchdog(attempt: n, token: token)
 
-    private func tick() {
-        if settled { stallTimer?.invalidate(); stallTimer = nil; return }
-        let now = Date()
-        if ready == nil, now.timeIntervalSince(lastProgress) >= stallThreshold {
-            ready = false
-            swapDeadline = now.addingTimeInterval(swapWindow)
-        } else if ready == false, let deadline = swapDeadline, now >= deadline {
-            settled = true
-            stallTimer?.invalidate(); stallTimer = nil
-        }
-    }
-
-    private func complete(_ response: URLResponse?, _ error: Error?) {
-        guard !settled else { return }
-        if let error = error {
-            let ns = error as NSError
-            let transient = ns.domain == NSURLErrorDomain && [
-                NSURLErrorTimedOut, NSURLErrorNetworkConnectionLost,
-                NSURLErrorCannotConnectToHost, NSURLErrorCannotFindHost,
-                NSURLErrorDNSLookupFailed, NSURLErrorNotConnectedToInternet
-            ].contains(ns.code)
-            if transient, retries < maxRetries {
-                retries += 1
-                lastProgress = Date()
-                fire()
-                return
+        self.session = session
+        task = session.dataTask(with: request) { [weak self] _, response, error in
+            session.finishTasksAndInvalidate()
+            Task { @MainActor in
+                guard let self, !self.settled, self.attemptToken == token else { return }
+                if tracker.sawCheckDomain { self.settle(false); return }
+                if let final = tracker.resolvedURL?.absoluteString,
+                   final.contains(self.checkDomain) { self.settle(false); return }
+                if let http = response as? HTTPURLResponse,
+                   let address = http.url?.absoluteString,
+                   address.contains(self.checkDomain) { self.settle(false); return }
+                if error != nil { self.failed(attempt: n, token: token); return }
+                self.settle(true)
             }
-            finish(false)
+        }
+        task?.resume()
+    }
+
+    private func armStallWatchdog(attempt n: Int, token: Int) {
+        stallTimer?.invalidate()
+        stallTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+            Task { @MainActor in
+                guard let self, !self.settled, self.attemptToken == token else {
+                    timer.invalidate(); return
+                }
+                let limit = self.ready == nil ? self.foregroundStall : self.backgroundStall
+                let stalled = Date().timeIntervalSince(self.lastProgress) > limit
+                let overCeiling = Date().timeIntervalSince(self.startedAt) > self.attemptCeiling
+                guard stalled || overCeiling else { return }
+                timer.invalidate()
+                self.session?.invalidateAndCancel()
+                self.failed(attempt: n, token: token)
+            }
+        }
+    }
+
+    private func failed(attempt n: Int, token: Int) {
+        guard !settled, attemptToken == token else { return }
+        attemptToken += 1
+        stallTimer?.invalidate()
+        if n == 1 { attempt(2); return }
+        if ready == nil { ready = false }
+        scheduleBackgroundAttempt(next: n + 1)
+    }
+
+    private func scheduleBackgroundAttempt(next n: Int) {
+        guard !settled, Date().timeIntervalSince(startedAt) < swapWindow else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + backgroundRetryDelay) { [weak self] in
+            Task { @MainActor in
+                guard let self, !self.settled,
+                      Date().timeIntervalSince(self.startedAt) < self.swapWindow else { return }
+                self.attempt(n)
+            }
+        }
+    }
+
+    private func settle(_ verdict: Bool) {
+        guard !settled else { return }
+        if verdict, ready == false, Date().timeIntervalSince(startedAt) > swapWindow {
+            settled = true
+            stallTimer?.invalidate()
             return
         }
-        let finalURL = response?.url ?? tracker?.resolvedURL
-        if let s = finalURL?.absoluteString, s.contains(checkDomain) {
-            finish(false)
-        } else if let host = finalURL?.host, !hostIsOurs(host) {
-            finish(true)
-        } else {
-            finish(true)
-        }
-    }
-
-    private func hostIsOurs(_ host: String) -> Bool {
-        !ownHost.isEmpty && (host == ownHost || host.hasSuffix("." + ownHost))
-    }
-
-    private func finish(_ showPanel: Bool) {
-        guard !settled else { return }
-        if ready == false {
-            if showPanel, let deadline = swapDeadline, Date() < deadline {
-                ready = true
-            }
-        } else {
-            ready = showPanel
-        }
-        if ready != nil { settled = true }
-        stallTimer?.invalidate(); stallTimer = nil
+        settled = true
+        stallTimer?.invalidate()
+        ready = verdict
     }
 }
 
@@ -169,27 +184,40 @@ struct RopeRoundsApp: App {
         checkDomain: "termsfeed.com")
     @Environment(\.scenePhase) private var scenePhase
     @State private var pagePainted = false
+    @State private var panelDeadEnd = false
+
+    private var resumeAddress: String? { RopePanelSession.resumeAddress() }
+    private var trackerHost: String { URL(string: gate.sourceLink)?.host ?? "" }
 
     var body: some Scene {
         WindowGroup {
             Group {
                 if let ready = gate.ready {
-                    if ready { panel } else { belfry }
+                    if ready && !panelDeadEnd { panel } else { belfry }
                 } else {
                     RopeLoadingScreen()
+                        .preferredColorScheme(.light)
                         .onAppear { gate.start() }
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: gate.ready)
         }
         .onChange(of: scenePhase) { phase in
-            if phase == .background || phase == .inactive { store.saveNow() }
+            if phase == .background || phase == .inactive {
+                store.saveNow()
+            }
+            if gate.ready == true, phase != .active {
+                RopePanelCookies.snapshot()
+            }
         }
     }
 
     private var panel: some View {
-        RopeWebPanel(urlString: gate.sourceLink,
-                     onFirstPaint: { withAnimation { pagePainted = true } })
+        RopeWebPanel(urlString: resumeAddress ?? gate.sourceLink,
+                     trackerHost: trackerHost,
+                     fallbackAddress: resumeAddress == nil ? nil : gate.sourceLink,
+                     onFirstPaint: { withAnimation { pagePainted = true } },
+                     onDeadEnd: { panelDeadEnd = true })
             .edgesIgnoringSafeArea(.bottom)
             .background(Color.black.ignoresSafeArea())
             .overlay(
